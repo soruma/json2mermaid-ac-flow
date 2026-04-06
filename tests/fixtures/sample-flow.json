@@ -1,0 +1,64 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "start-node",
+  "Metadata": {
+    "Name": "Sample Flow"
+  },
+  "Actions": [
+    {
+      "Identifier": "start-node",
+      "Type": "PlayAudio",
+      "Parameters": {
+        "Text": "Welcome to our service"
+      },
+      "Transitions": {
+        "NextAction": "check-hours"
+      }
+    },
+    {
+      "Identifier": "check-hours",
+      "Type": "CheckHoursOfOperation",
+      "Transitions": {
+        "NextAction": "transfer-queue",
+        "Conditions": [
+          {
+            "NextAction": "play-closed-msg",
+            "Condition": {
+              "Operator": "False"
+            }
+          }
+        ],
+        "Errors": [
+          {
+            "NextAction": "play-error-msg",
+            "ErrorType": "NoMatchingCondition"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "transfer-queue",
+      "Type": "Transfer",
+      "Transitions": {}
+    },
+    {
+      "Identifier": "play-closed-msg",
+      "Type": "PlayAudio",
+      "Transitions": {
+        "NextAction": "disconnect"
+      }
+    },
+    {
+      "Identifier": "play-error-msg",
+      "Type": "PlayAudio",
+      "Transitions": {
+        "NextAction": "disconnect"
+      }
+    },
+    {
+      "Identifier": "disconnect",
+      "Type": "Disconnect",
+      "Transitions": {}
+    }
+  ]
+}
