@@ -13,10 +13,31 @@ const sanitizeId = (id: string): string => {
  */
 const generateNode = (action: Action): string => {
   const safeId = sanitizeId(action.Identifier);
-  const label = `${action.Type}: ${action.Identifier}`;
+  let label = `${action.Type}`;
 
-  // TODO: アクションタイプに応じて形状を変更する (例: CheckHoursOfOperation はひし形)
-  return `  ${safeId}["${label}"]`;
+  // Parameters から追加情報を抽出してラベルに付与
+  if (action.Parameters) {
+    if (action.Parameters.Text) {
+      const escapedText = action.Parameters.Text.replace(/"/g, '#quot;');
+      label += `\\n"${escapedText.substring(0, 30)}${escapedText.length > 30 ? '...' : ''}"`;
+    } else if (action.Parameters.Attributes) {
+      const attrs = Object.entries(action.Parameters.Attributes)
+        .map(([k, v]) => `${k}=${v}`)
+        .join(', ');
+      if (attrs) label += `\\n[${attrs.substring(0, 30)}${attrs.length > 30 ? '...' : ''}]`;
+    }
+  }
+  
+  // 識別子も補助的に含める
+  label += `\\n(${action.Identifier})`;
+
+  // アクションタイプに応じて形状を変更
+  const decisionTypes = ['CheckHoursOfOperation', 'CheckAttribute', 'GetUserInput', 'CheckPrompts'];
+  if (decisionTypes.includes(action.Type)) {
+    return `  ${safeId}{"${label}"}`; // ひし形
+  }
+
+  return `  ${safeId}["${label}"]`; // 四角形
 };
 
 /**
@@ -44,9 +65,20 @@ const generateEdges = (action: Action): string[] => {
 
   // Conditions (条件分岐)
   if (Transitions.Conditions) {
-    Transitions.Conditions.forEach((condition, index) => {
+    Transitions.Conditions.forEach((condition) => {
       const toId = sanitizeId(condition.NextAction);
-      const label = `|Condition ${index + 1}|`; // TODO: 条件の詳細を表示
+      
+      // Condition オブジェクトからラベルを推測
+      let labelText = 'Condition';
+      if (condition.Condition) {
+        if (condition.Condition.Operator) {
+          labelText = condition.Condition.Operator;
+        } else if (condition.Condition.Comparison) {
+          labelText = `${condition.Condition.Comparison} ${condition.Condition.Value || ''}`;
+        }
+      }
+      
+      const label = `|${labelText}|`;
       edges.push(`  ${fromId} -- ${label} --> ${toId}`);
     });
   }
