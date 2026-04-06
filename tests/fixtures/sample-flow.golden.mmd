@@ -1,0 +1,13 @@
+graph TD
+  start_node["PlayAudio: start-node"]
+  check_hours["CheckHoursOfOperation: check-hours"]
+  transfer_queue["Transfer: transfer-queue"]
+  play_closed_msg["PlayAudio: play-closed-msg"]
+  play_error_msg["PlayAudio: play-error-msg"]
+  disconnect["Disconnect: disconnect"]
+  start_node --> check_hours
+  check_hours --> transfer_queue
+  check_hours -- |Error: NoMatchingCondition| --> play_error_msg
+  check_hours -- |Condition 1| --> play_closed_msg
+  play_closed_msg --> disconnect
+  play_error_msg --> disconnect
