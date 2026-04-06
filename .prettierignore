@@ -1,0 +1,2 @@
+tests/fixtures/*.mmd
+tests/__snapshots__/

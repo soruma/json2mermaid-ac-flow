@@ -34,8 +34,8 @@ describe('convertJsonToMermaid', () => {
   it('should convert a flow JSON file to a Mermaid string', () => {
     const result = convertJsonToMermaid(tempJsonPath);
     expect(result).toContain('graph TD');
-    expect(result).toContain('start["PlayAudio: start"]');
-    expect(result).toContain('end["Disconnect: end"]');
+    expect(result).toContain('start["PlayAudio\n(start)"]');
+    expect(result).toContain('end["Disconnect\n(end)"]');
     expect(result).toContain('start --> end');
   });
 });

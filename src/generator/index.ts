@@ -1,4 +1,4 @@
-import { Action, Flow, Transition } from '../schema/flow';
+import { Action, Flow } from '../schema/flow';
 
 /**
  * Mermaid 構文内の ID を安全な形式に変換します。
@@ -6,6 +6,15 @@ import { Action, Flow, Transition } from '../schema/flow';
  */
 const sanitizeId = (id: string): string => {
   return id.replace(/[^a-zA-Z0-9]/g, '_');
+};
+
+/**
+ * UUID かどうかを判定します。
+ */
+const isUUID = (str: string): boolean => {
+  // Common UUID regex: 8-4-4-4-12 hexadecimal characters
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
 };
 
 /**
@@ -19,17 +28,22 @@ const generateNode = (action: Action): string => {
   if (action.Parameters) {
     if (action.Parameters.Text) {
       const escapedText = action.Parameters.Text.replace(/"/g, '#quot;');
-      label += `\\n"${escapedText.substring(0, 30)}${escapedText.length > 30 ? '...' : ''}"`;
+      label += `\n${escapedText.substring(0, 30)}${escapedText.length > 30 ? '...' : ''}`;
     } else if (action.Parameters.Attributes) {
       const attrs = Object.entries(action.Parameters.Attributes)
         .map(([k, v]) => `${k}=${v}`)
         .join(', ');
-      if (attrs) label += `\\n[${attrs.substring(0, 30)}${attrs.length > 30 ? '...' : ''}]`;
+      if (attrs)
+        label += `
+[${attrs.substring(0, 30)}${attrs.length > 30 ? '...' : ''}]`;
     }
   }
-  
-  // 識別子も補助的に含める
-  label += `\\n(${action.Identifier})`;
+
+  // 識別子がUUIDでない場合のみ、識別子を補助情報として追加
+  if (!isUUID(action.Identifier)) {
+    label += `
+(${action.Identifier})`;
+  }
 
   // アクションタイプに応じて形状を変更
   const decisionTypes = ['CheckHoursOfOperation', 'CheckAttribute', 'GetUserInput', 'CheckPrompts'];
@@ -65,11 +79,11 @@ const generateEdges = (action: Action): string[] => {
 
   // Conditions (条件分岐)
   if (Transitions.Conditions) {
-    Transitions.Conditions.forEach((condition) => {
+    Transitions.Conditions.forEach((condition, index) => {
       const toId = sanitizeId(condition.NextAction);
-      
+
       // Condition オブジェクトからラベルを推測
-      let labelText = 'Condition';
+      let labelText = `Condition ${index + 1}`;
       if (condition.Condition) {
         if (condition.Condition.Operator) {
           labelText = condition.Condition.Operator;
@@ -77,7 +91,7 @@ const generateEdges = (action: Action): string[] => {
           labelText = `${condition.Condition.Comparison} ${condition.Condition.Value || ''}`;
         }
       }
-      
+
       const label = `|${labelText}|`;
       edges.push(`  ${fromId} -- ${label} --> ${toId}`);
     });

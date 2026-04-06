@@ -33,15 +33,15 @@ describe('E2E CLI test', () => {
     // ファイル内容の確認
     const content = fs.readFileSync(outputPath, 'utf-8');
     expect(content).toContain('graph TD');
-    expect(content).toContain('start_node["PlayAudio: start-node"]');
-    expect(content).toContain('check_hours["CheckHoursOfOperation: check-hours"]');
-    expect(content).toContain('check_hours -- |Condition 1| --> play_closed_msg');
+    expect(content).toContain('start_node["PlayAudio\nWelcome to our service\n(start-node)"]');
+    expect(content).toContain('check_hours{"CheckHoursOfOperation\n(check-hours)"}');
+    expect(content).toContain('check_hours -- |False| --> play_closed_msg');
     expect(content).toContain('check_hours -- |Error: NoMatchingCondition| --> play_error_msg');
   });
 
   it('should generate default output filename when -o is not provided', () => {
     const defaultOutputPath = path.resolve(__dirname, './fixtures/sample-flow.mmd');
-    
+
     // -o オプションなしで実行
     const command = `node ${binPath} ${inputPath}`;
     execSync(command);

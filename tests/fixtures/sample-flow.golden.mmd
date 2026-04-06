@@ -1,10 +1,17 @@
 graph TD
-  start_node["PlayAudio\n"Welcome to our service"\n(start-node)"]
-  check_hours{"CheckHoursOfOperation\n(check-hours)"}
-  transfer_queue["Transfer\n(transfer-queue)"]
-  play_closed_msg["PlayAudio\n(play-closed-msg)"]
-  play_error_msg["PlayAudio\n(play-error-msg)"]
-  disconnect["Disconnect\n(disconnect)"]
+  start_node["PlayAudio
+Welcome to our service
+(start-node)"]
+  check_hours{"CheckHoursOfOperation
+(check-hours)"}
+  transfer_queue["Transfer
+(transfer-queue)"]
+  play_closed_msg["PlayAudio
+(play-closed-msg)"]
+  play_error_msg["PlayAudio
+(play-error-msg)"]
+  disconnect["Disconnect
+(disconnect)"]
   start_node --> check_hours
   check_hours --> transfer_queue
   check_hours -- |Error: NoMatchingCondition| --> play_error_msg
