@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import * as fs from 'fs';
-import { convertJsonToMermaid } from './index';
+import { convertJsonToMermaid, Language } from './index';
 
 const program = new Command();
 
@@ -10,14 +10,16 @@ program
   .version('1.0.0')
   .argument('<input-file>', 'input Amazon Connect Flow JSON file')
   .option('-o, --output <output-file>', 'output Mermaid file path')
-  .action((inputFile: string, options: { output?: string }) => {
+  .option('--lang <language>', 'output language: ja (Japanese) or en (English)', 'ja')
+  .action((inputFile: string, options: { output?: string; lang?: string }) => {
     try {
       if (!fs.existsSync(inputFile)) {
         console.error(`Error: Input file "${inputFile}" does not exist.`);
         process.exit(1);
       }
 
-      const mermaidContent = convertJsonToMermaid(inputFile);
+      const language: Language = options.lang === 'en' ? 'en' : 'ja';
+      const mermaidContent = convertJsonToMermaid(inputFile, language);
 
       if (options.output) {
         fs.writeFileSync(options.output, mermaidContent, 'utf-8');
