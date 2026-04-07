@@ -1,5 +1,82 @@
 import { Action, Flow } from '../schema/flow';
 
+export type Language = 'ja' | 'en';
+
+/**
+ * Amazon Connect フロー Type の日本語ラベルマッピング
+ */
+const ACTION_TYPE_LABELS_JA: Record<string, string> = {
+  // コンタクト属性
+  UpdateContactAttributes: 'コンタクト属性の設定',
+  UpdateContactData: 'コンタクト属性の設定',
+  CheckAttribute: 'コンタクト属性を確認する',
+  // プロンプト・入力
+  MessageParticipant: 'プロンプトの再生',
+  GetParticipantInput: '顧客の入力を取得する',
+  // 音声・録音
+  SetVoice: '音声の設定',
+  UpdateContactTextToSpeechVoice: '音声の設定',
+  SetRecordingBehavior: '録音の設定',
+  UpdateContactRecordingBehavior: '記録と分析の動作の設定',
+  // キュー
+  SetQueue: 'キューの設定',
+  SetWorkingQueue: '作業キューの設定',
+  UpdateContactTargetQueue: '作業キューの設定',
+  CheckQueueStatus: 'キューのステータスを確認する',
+  // 転送・切断
+  TransferContactToQueue: 'キューへの転送',
+  TransferContactToNumber: '電話番号への転送',
+  DisconnectParticipant: '切断',
+  // 時間・待機
+  Wait: '待機',
+  CheckHoursOfOperation: '営業時間の確認',
+  // Lambda・外部連携
+  InvokeExternalResource: 'AWS Lambda 関数を呼び出す',
+  InvokeLambdaFunction: 'AWS Lambda 関数を呼び出す',
+  // 配布・ルーティング
+  DistributeByPercentage: 'パーセンテージベースの配布',
+  SetRoutingCriteria: 'ルーティング条件の設定',
+  // ロギング
+  UpdateFlowLoggingBehavior: 'ログ記録動作の設定',
+  // 顧客情報
+  GetContactData: '顧客情報の取得',
+  // フロー制御
+  InvokeModule: 'モジュールの呼び出し',
+  EndFlowModuleExecution: '戻る (モジュールから)',
+  ResumeContact: 'コンタクトを再開',
+  // コールバック
+  SetCallbackNumber: 'コールバック番号を設定する',
+  // フロー設定
+  SetDisconnectFlow: '切断フローの設定',
+  SetHoldFlow: '保留フローの設定',
+  SetWhisperFlow: 'ウィスパーフローの設定',
+  SetEventFlow: 'イベントフローの設定',
+  // Voice ID
+  CheckVoiceID: 'Voice ID を確認する',
+  // 人員確認
+  CheckStaffing: '人員の確認',
+  // メディアストリーミング
+  StartMediaStreaming: 'メディアストリーミングの開始',
+  StopMediaStreaming: 'メディアストリーミングの停止',
+  // ビュー
+  ShowView: 'ビューを表示',
+  // コンテンツ取得
+  LoadContactContent: '保存されたコンテンツを取得する',
+  // コンタクト関連付け
+  CreatePersistentContactAssociation: '常設コンタクト関連付けの作成',
+  // 顧客認証
+  AuthenticateParticipant: '顧客を認証',
+  // 通話進捗
+  CheckCallProgress: '通話の進捗確認',
+};
+
+const getTypeLabel = (type: string, language: Language): string => {
+  if (language === 'ja' && ACTION_TYPE_LABELS_JA[type]) {
+    return ACTION_TYPE_LABELS_JA[type];
+  }
+  return type;
+};
+
 /**
  * Mermaid 構文内の ID を安全な形式に変換します。
  * (英数字とアンダースコア以外を置換)
@@ -20,9 +97,9 @@ const isUUID = (str: string): boolean => {
 /**
  * アクション (Action) を Mermaid のノード定義に変換します。
  */
-const generateNode = (action: Action): string => {
+const generateNode = (action: Action, language: Language): string => {
   const safeId = sanitizeId(action.Identifier);
-  let label = `${action.Type}`;
+  let label = getTypeLabel(action.Type, language);
 
   // Parameters から追加情報を抽出してラベルに付与
   if (action.Parameters) {
@@ -30,12 +107,11 @@ const generateNode = (action: Action): string => {
       const escapedText = action.Parameters.Text.replace(/"/g, '#quot;');
       label += `\n${escapedText.substring(0, 30)}${escapedText.length > 30 ? '...' : ''}`;
     } else if (action.Parameters.Attributes) {
-      const attrs = Object.entries(action.Parameters.Attributes)
-        .map(([k, v]) => `${k}=${v}`)
-        .join(', ');
-      if (attrs)
-        label += `
-[${attrs.substring(0, 30)}${attrs.length > 30 ? '...' : ''}]`;
+      const attrEntries = Object.entries(action.Parameters.Attributes as Record<string, string>);
+      if (attrEntries.length > 0) {
+        const attrs = attrEntries.map(([k, v]) => `${k}=${String(v).replace(/"/g, '#quot;')}`).join('\n');
+        label += `\n${attrs}`;
+      }
     }
   }
 
@@ -103,12 +179,12 @@ const generateEdges = (action: Action): string[] => {
 /**
  * Flow オブジェクト全体を Mermaid 構文に変換します。
  */
-export const generateMermaid = (flow: Flow): string => {
+export const generateMermaid = (flow: Flow, language: Language = 'ja'): string => {
   const lines: string[] = ['graph TD'];
 
   // 全ノードの定義
   flow.Actions.forEach((action) => {
-    lines.push(generateNode(action));
+    lines.push(generateNode(action, language));
   });
 
   // 全エッジの定義
