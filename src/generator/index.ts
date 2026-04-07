@@ -162,7 +162,12 @@ const generateEdges = (action: Action): string[] => {
       let labelText = `Condition ${index + 1}`;
       if (condition.Condition) {
         if (condition.Condition.Operator) {
-          labelText = condition.Condition.Operator;
+          const operands: unknown[] = condition.Condition.Operands;
+          if (Array.isArray(operands) && operands.length > 0) {
+            labelText = `${condition.Condition.Operator} ${operands.join(', ')}`;
+          } else {
+            labelText = condition.Condition.Operator;
+          }
         } else if (condition.Condition.Comparison) {
           labelText = `${condition.Condition.Comparison} ${condition.Condition.Value || ''}`;
         }
