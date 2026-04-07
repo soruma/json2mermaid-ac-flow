@@ -70,11 +70,46 @@ const ACTION_TYPE_LABELS_JA: Record<string, string> = {
   CheckCallProgress: '通話の進捗確認',
 };
 
+/**
+ * Amazon Connect フロー ErrorType の日本語ラベルマッピング（デフォルト）
+ * AWS 公式ドキュメントの表現に準拠
+ */
+const ERROR_TYPE_LABELS_JA: Record<string, string> = {
+  NoMatchingCondition: 'エラー',
+  NoMatchingError: 'エラー',
+  InputTimeLimitExceeded: 'タイムアウト',
+  TimedOut: 'タイムアウト',
+  Error: 'エラー',
+  QueueAtCapacity: 'フル稼働',
+  ContactNotFound: 'コンタクトが見つかりません',
+  CustomerEntryError: '顧客の入力エラー',
+};
+
+/**
+ * アクション種別ごとの ErrorType 日本語ラベルオーバーライド
+ */
+const ERROR_TYPE_LABELS_JA_BY_ACTION: Record<string, Record<string, string>> = {
+  GetParticipantInput: {
+    InputTimeLimitExceeded: 'タイムアウト',
+    NoMatchingCondition: 'デフォルト',
+    NoMatchingError: 'エラー',
+  },
+};
+
 const getTypeLabel = (type: string, language: Language): string => {
   if (language === 'ja' && ACTION_TYPE_LABELS_JA[type]) {
     return ACTION_TYPE_LABELS_JA[type];
   }
   return type;
+};
+
+const getErrorLabel = (errorType: string | undefined, actionType: string, language: Language): string => {
+  if (language === 'ja') {
+    const overrides = ERROR_TYPE_LABELS_JA_BY_ACTION[actionType];
+    const label = errorType ? (overrides?.[errorType] ?? ERROR_TYPE_LABELS_JA[errorType] ?? 'エラー') : 'エラー';
+    return `|${label}|`;
+  }
+  return errorType ? `|Error: ${errorType}|` : '|Error|';
 };
 
 /**
@@ -133,7 +168,7 @@ const generateNode = (action: Action, language: Language): string => {
 /**
  * 遷移 (Transition) を Mermaid のエッジ定義に変換します。
  */
-const generateEdges = (action: Action): string[] => {
+const generateEdges = (action: Action, language: Language): string[] => {
   const edges: string[] = [];
   const fromId = sanitizeId(action.Identifier);
   const { Transitions } = action;
@@ -148,7 +183,7 @@ const generateEdges = (action: Action): string[] => {
   if (Transitions.Errors) {
     Transitions.Errors.forEach((error) => {
       const toId = sanitizeId(error.NextAction);
-      const label = error.ErrorType ? `|Error: ${error.ErrorType}|` : '|Error|';
+      const label = getErrorLabel(error.ErrorType, action.Type, language);
       edges.push(`  ${fromId} -- ${label} --> ${toId}`);
     });
   }
@@ -194,7 +229,7 @@ export const generateMermaid = (flow: Flow, language: Language = 'ja'): string =
 
   // 全エッジの定義
   flow.Actions.forEach((action) => {
-    const actionEdges = generateEdges(action);
+    const actionEdges = generateEdges(action, language);
     lines.push(...actionEdges);
   });
 

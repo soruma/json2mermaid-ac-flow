@@ -59,9 +59,41 @@ describe('generateMermaid', () => {
     };
 
     const mermaid = generateMermaid(flow);
-    expect(mermaid).toContain('action1 -- |Error: NoMatchingCondition| --> action_error');
+    expect(mermaid).toContain('action1 -- |エラー| --> action_error');
     expect(mermaid).toContain('action1 -- |Condition 1| --> action_cond1');
     expect(mermaid).toContain('action1 --> action_default');
+  });
+
+  it('should generate English error labels when lang is en', () => {
+    const flow: Flow = {
+      Version: '2019-10-30',
+      StartAction: 'action1',
+      Actions: [
+        {
+          Identifier: 'action1',
+          Type: 'GetUserInput',
+          Transitions: {
+            NextAction: 'action-default',
+            Errors: [
+              {
+                NextAction: 'action-error',
+                ErrorType: 'NoMatchingCondition',
+              },
+              {
+                NextAction: 'action-error2',
+              },
+            ],
+          },
+        },
+        { Identifier: 'action-default', Type: 'Disconnect', Transitions: {} },
+        { Identifier: 'action-error', Type: 'Disconnect', Transitions: {} },
+        { Identifier: 'action-error2', Type: 'Disconnect', Transitions: {} },
+      ],
+    };
+
+    const mermaid = generateMermaid(flow, 'en');
+    expect(mermaid).toContain('action1 -- |Error: NoMatchingCondition| --> action_error');
+    expect(mermaid).toContain('action1 -- |Error| --> action_error2');
   });
 
   it('should correctly label nodes based on identifier type (UUID vs comment)', () => {

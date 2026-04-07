@@ -14,7 +14,7 @@ Welcome to our service
 (disconnect)"]
   start_node --> check_hours
   check_hours --> transfer_queue
-  check_hours -- |Error: NoMatchingCondition| --> play_error_msg
+  check_hours -- |エラー| --> play_error_msg
   check_hours -- |False| --> play_closed_msg
   play_closed_msg --> disconnect
   play_error_msg --> disconnect

@@ -36,7 +36,7 @@ describe('E2E CLI test', () => {
     expect(content).toContain('start_node["PlayAudio\nWelcome to our service\n(start-node)"]');
     expect(content).toContain('check_hours{"営業時間の確認\n(check-hours)"}');
     expect(content).toContain('check_hours -- |False| --> play_closed_msg');
-    expect(content).toContain('check_hours -- |Error: NoMatchingCondition| --> play_error_msg');
+    expect(content).toContain('check_hours -- |エラー| --> play_error_msg');
   });
 
   it('should output English labels when --lang en is specified', () => {
