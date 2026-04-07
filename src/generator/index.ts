@@ -105,7 +105,7 @@ const generateNode = (action: Action, language: Language): string => {
   if (action.Parameters) {
     if (action.Parameters.Text) {
       const escapedText = action.Parameters.Text.replace(/"/g, '#quot;');
-      label += `\n${escapedText.substring(0, 30)}${escapedText.length > 30 ? '...' : ''}`;
+      label += `\n${escapedText}`;
     } else if (action.Parameters.Attributes) {
       const attrEntries = Object.entries(action.Parameters.Attributes as Record<string, string>);
       if (attrEntries.length > 0) {
