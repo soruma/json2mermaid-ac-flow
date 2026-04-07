@@ -13,8 +13,8 @@
 - **引数**:
   - `input-file`: 入力となる Amazon Connect フロー JSON ファイルのパス。
 - **オプション**:
-  - `-o, --output <file>`: 出力先の Mermaid ファイルパス (デフォルトは入力ファイル名 + `.mmd`)。
-  - `-v, --version`: バージョン情報の表示。
+  - `-o, --output <file>`: 出力先の Mermaid ファイルパス。省略時は標準出力に出力する。
+  - `-V, --version`: バージョン情報の表示。
   - `-h, --help`: ヘルプの表示。
 
 ## 3. Amazon Connect Flow Language の型定義 (概要)

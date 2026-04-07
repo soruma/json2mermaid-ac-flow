@@ -1,6 +1,5 @@
 import { Command } from 'commander';
 import * as fs from 'fs';
-import * as path from 'path';
 import { convertJsonToMermaid } from './index';
 
 const program = new Command();
@@ -20,14 +19,12 @@ program
 
       const mermaidContent = convertJsonToMermaid(inputFile);
 
-      let outputPath = options.output;
-      if (!outputPath) {
-        const parsedPath = path.parse(inputFile);
-        outputPath = path.join(parsedPath.dir, `${parsedPath.name}.mmd`);
+      if (options.output) {
+        fs.writeFileSync(options.output, mermaidContent, 'utf-8');
+        console.error(`Successfully converted to: ${options.output}`);
+      } else {
+        process.stdout.write(mermaidContent);
       }
-
-      fs.writeFileSync(outputPath, mermaidContent, 'utf-8');
-      console.log(`Successfully converted to: ${outputPath}`);
     } catch (error) {
       if (error instanceof Error) {
         console.error(`Error: ${error.message}`);
